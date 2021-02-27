@@ -19,15 +19,15 @@ def count_total_population_area(areas, dict_key, data):
 #(2) Diversity as variety
 #this function counts the number of nationalities of an area (district or neighbourhood) and lists them in a dictionary.
 def count_nationalities(areas, dict_key, data):
-  nationalities_per_area={}
+  nationalities_per_area=[]
   for area in areas:
     local_nationalities=[]
     for row in data:
       if row[dict_key]==area and int(row['Nombre'])>0:
           local_nationalities.append(row['Nacionalitat'])
-    
     local_set_nationalities=set(local_nationalities)
-    nationalities_per_area[area]=[len(local_set_nationalities), local_set_nationalities]
+    nationalities_per_area.append({'Name': area, 'Number_of_nationalities': len(local_set_nationalities)})
+  nationalities_per_area.sort(key=lambda x: x.get('Number_of_nationalities'),reverse=True)
   return nationalities_per_area
 
 
@@ -258,30 +258,55 @@ def bretxa_digital_districts(data, llegenda):
 # Plotters
 
 def plot_diversity_variety(data):
-  data_pairs = [
-    (x, num_nationalities)
-    for x, (area_name, [num_nationalities, nationalities])
-    in enumerate(data.items())  
-  ]
-  # nationality_nums = [
-    # num_nationalities
-    # for area_name, [num_nationalities, nationalities] 
-    # in data.items()
-  # ]  
-  area_names = list(data.keys())
+  area_names = tuple(
+    row['Name']
+    for row in data
+  )
+  y_pos = list(
+    range(
+      len(area_names)
+    )
+  )
   nationality_nums = [
-    num_nationalities
-    for [num_nationalities, _]
-    in data.values()
+    row['Number_of_nationalities']
+    for row in data
   ]
-  # pp(data)
-  pp(area_names)
-  pp(nationality_nums)
-  fig, ax = plt.subplots()
-  ax.barh(area_names, nationality_nums)
-  # xs = [x for (x, y) in data_pairs]
-  # ys = [y for (x, y) in data_pairs]
-  # bar(xs, ys)
+
+
+  plt.bar(y_pos, nationality_nums, align='center')
+  plt.xticks(y_pos, area_names, rotation='vertical', fontsize=8)
+  plt.ylabel('Number of nationalities')
+  plt.title('Diversity as variety')
+  plt.tight_layout()
+  plt.show()
+
+
+
+def plot_diversity_simpson(data):
+  area_names = tuple(
+    row['Area']
+    for row in data
+  )
+  y_pos = list(
+    range(
+      len(area_names)
+    )
+  )
+  simpson_index = [
+    row['Simpson index']
+    for row in data
+  ]
+
+  plt.bar(y_pos, simpson_index, align='center')
+  plt.xticks(y_pos, area_names, rotation='vertical', fontsize=8)
+  plt.ylabel('Simpson index')
+  plt.title('Diversity as variety+balance (Simpson index)')
+  plt.tight_layout()
+  plt.show()
+
+
+
+
 
 
 csv_nationalities=open('2018_ine_nacionalitat_per_sexe.csv', newline='')
@@ -305,10 +330,10 @@ population_districts=count_total_population_area(set_districts, 'Nom_Districte',
 population_neighborhoods=count_total_population_area(set_neighborhoods, 'Nom_Barri', rows_nationalities)
 # print(population_neighborhoods)
 
-nationalities_count = count_nationalities(set_districts, 'Nom_Districte', rows_nationalities)
-# pp(nationalities_count)
-plot_diversity_variety(nationalities_count)
-# print(count_nationalities(set_neighborhoods, 'Nom_Barri', rows_nationalities))
+
+# nationalities_count = count_nationalities(set_districts, 'Nom_Districte', rows_nationalities)
+# plot_diversity_variety(nationalities_count)
+
 
 #print(gender_count(set_districts, 'Nom_Districte', rows_nationalities))
 #print(gender_count(set_neighborhoods, 'Nom_Barri', rows_nationalities))
@@ -319,6 +344,10 @@ plot_diversity_variety(nationalities_count)
 
 #print(simpson_index(set_districts, 'Nom_Districte', rows_nationalities))
 #print(simpson_index(set_neighborhoods, 'Nom_Barri', rows_nationalities))
+#simpson_index_data=simpson_index(set_districts, 'Nom_Districte', rows_nationalities)
+# simpson_index_data=simpson_index(set_neighborhoods, 'Nom_Barri', rows_nationalities)
+# plot_diversity_simpson(simpson_index_data)
+
 
 # print(where_is_each_nationality(set_districts, 'Hondures', 'Nom_Districte', rows_nationalities))
 # print(where_is_each_nationality(set_districts, 'Nicaragua', 'Nom_Districte', rows_nationalities))
