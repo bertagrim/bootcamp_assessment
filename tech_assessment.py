@@ -79,9 +79,36 @@ def count_non_spaniard(items, dict_key, data):
 
 
 
-#(5) this function counts the number of women and men of an area (district or neighbourhood) or in a nationality and also gives you the percentage over the total populaiton (in an ordered list from higher to lower proportion of women).
-#it's only interesting for the case of nationalities, since gender is very much balanced wrt neighbourhoods/districts
-def gender_count(items, dict_key, data):
+#(5) this function counts the number of women and men of a nationality and also gives you the percentage over the total populaiton (in an ordered list from higher to lower proportion of women).
+#it's only interesting for the case of nationalities, since gender is very much balanced wrt neighbourhoods/districts. Only when total polation is higher than 5000.
+def gender_count_nationalities(items, dict_key, data):
+  gender_stats=[]
+  for item in items:
+    women_count=0
+    men_count=0
+    for row in data:
+      if row[dict_key]==item:
+          if row['Sexe']=='Dona':
+            women_count+=int(row['Nombre'])
+          else:
+            men_count+=int(row['Nombre'])
+    total_count=women_count+men_count
+    percent_women=(women_count/total_count)*100
+    percent_men=(men_count/total_count)*100
+    if total_count>5000:
+      gender_stats.append({
+        'Name': item,
+        'Women': (women_count, round(percent_women)), 
+        'Men': (men_count, round(percent_men))
+      })
+  gender_stats.sort(key=lambda x: x.get('Women')[1],reverse=True)
+  #gender_stats.sort(key=lambda x: x.get('Women')[0],reverse=True)
+  return gender_stats
+
+
+#(5) this function counts the number of women and men of an area (district or neighbourhood) and also gives you the percentage over the total populaiton (in an ordered list from higher to lower proportion of women).
+#it's only interesting for the case of nationalities, since gender is very much balanced wrt neighbourhoods/districts. 
+def gender_count_areas(items, dict_key, data):
   gender_stats=[]
   for item in items:
     women_count=0
@@ -103,6 +130,7 @@ def gender_count(items, dict_key, data):
   gender_stats.sort(key=lambda x: x.get('Women')[1],reverse=True)
   #gender_stats.sort(key=lambda x: x.get('Women')[0],reverse=True)
   return gender_stats
+
 
 
 
@@ -132,13 +160,29 @@ def academic_level_areas(items, dict_key, data):
           women_count+=int(row['Nombre'])
         else:
           men_count+=int(row['Nombre'])
-    academic_level_stats.append({
-       'Name': item,
-       'Women': women_count, 
-       'Men': men_count
-     })
-  academic_level_stats.sort(key=lambda x: x.get('Women'),reverse=True)
+    if items==set_districts:
+      for entry in population_districts:
+        if entry['Name']==item:
+          academic_level_stats.append({
+            'Name': item,
+            'Women': women_count, 
+            'Men': men_count,
+            'Total':round((women_count+men_count)/entry['Population'], 3)
+          })
+    else:
+      for entry in population_neighborhoods:
+        if entry['Name']==item:
+          academic_level_stats.append({
+            'Name': item,
+            'Women': women_count, 
+            'Men': men_count,
+            'Total':round((women_count+men_count)/entry['Population'], 3)
+          })
+
+  academic_level_stats.sort(key=lambda x: x.get('Name'),reverse=True)
   return academic_level_stats
+
+
 
 #(8) this function gives you a ranking of neighborhood by percentage of unemployment
 def unemployment_neighborhood(dict_key, data):
@@ -149,7 +193,7 @@ def unemployment_neighborhood(dict_key, data):
       if row[dict_key]==neighborhood and row['Mes']=='1':
         unemployment_in_area=float(row['Pes_atur'])
     unemployment_stats.append({'Name': neighborhood, 'Unemployment': unemployment_in_area})
-  unemployment_stats.sort(key=lambda x: x.get('Unemployment'),reverse=True)
+  unemployment_stats.sort(key=lambda x: x.get('Name'),reverse=True)
   return unemployment_stats
         
 
@@ -166,7 +210,7 @@ def unemployment_district(dict_key, data):
         population_per_neighborhood.append(float(row['Població_16_64_anys']))
     unemployment_in_area=round(np.average(unemployment_per_neighborhood, weights=population_per_neighborhood),3)
     unemployment_stats.append({'Name': district, 'Unemployment': unemployment_in_area})
-  unemployment_stats.sort(key=lambda x: x.get('Unemployment'),reverse=True)
+  unemployment_stats.sort(key=lambda x: x.get('Name'),reverse=True)
   return unemployment_stats
 
 
@@ -182,7 +226,7 @@ def biblios_tic_barris(dict_key, data):
       if item['Name']==neighborhood:
         total_population_neighborhood=item['Population']
     usos_tic_stats.append({'Name': neighborhood, 'Usos ordinadors i wifi': [usos_tic_area, round(usos_tic_area/total_population_neighborhood,2)]})
-  usos_tic_stats.sort(key=lambda x: x.get('Usos ordinadors i wifi')[1],reverse=True)
+  usos_tic_stats.sort(key=lambda x: x.get('Name'),reverse=True)
   return usos_tic_stats
 
 
@@ -198,7 +242,7 @@ def biblios_tic_districtes(dict_key, data):
       if item['Name']==district:
         total_population_district=item['Population']
     usos_tic_stats.append({'Name': district, 'Usos ordinadors i wifi': [usos_tic_area, round(usos_tic_area/total_population_district,2)]})
-  usos_tic_stats.sort(key=lambda x: x.get('Usos ordinadors i wifi')[1],reverse=True)
+  usos_tic_stats.sort(key=lambda x: x.get('Name'),reverse=True)
   return usos_tic_stats
 
 
@@ -232,7 +276,7 @@ def bretxa_digital_neighborhoods(data, llegenda):
     else:
       percent=0
     no_internet_stats.append({'Neighborhood':item['Barri'], 'No internet': [no_internet_at_home_count, round(percent,2)]})
-  no_internet_stats.sort(key=lambda x: x.get('No internet')[1],reverse=True)
+  no_internet_stats.sort(key=lambda x: x.get('Neighborhood'),reverse=True)
   return no_internet_stats
 
 
@@ -252,9 +296,10 @@ def bretxa_digital_districts(data, llegenda):
     else:
       percent=0
     no_internet_stats.append({'Districte':item['Districte'], 'No internet': [no_internet_at_home_count, round(percent,2)]})
-  no_internet_stats.sort(key=lambda x: x.get('No internet')[1],reverse=True)
+  no_internet_stats.sort(key=lambda x: x.get('Districte'),reverse=True)
   return no_internet_stats
   
+
 # Plotters
 
 def plot_diversity_variety(data):
@@ -307,6 +352,158 @@ def plot_diversity_simpson(data):
 
 
 
+def plot_non_spaniards(data):
+  area_names = tuple(
+    row['Name']
+    for row in data
+  )
+  y_pos = list(
+    range(
+      len(area_names)
+    )
+  )
+  non_spaniard_percent= [
+    row['Non-Spaniard'][1]
+    for row in data
+  ]
+
+  plt.bar(y_pos, non_spaniard_percent, align='center')
+  plt.xticks(y_pos, area_names, rotation='vertical', fontsize=8)
+  plt.ylabel('Percentage of non-Spaniards')
+  plt.title('Proportion of non-Spanish population')
+  plt.tight_layout()
+  plt.show()
+  # plt.savefig('percentage_non_spaniards_neighborhoods.pdf')
+
+
+def plot_gender_per_nationality(data):
+  nationalities = tuple(
+    row['Name']
+    for row in data
+  )
+  y_pos = list(
+    range(
+      len(nationalities)
+    )
+  )
+  women_percent= [
+    row['Women'][1]
+    for row in data
+  ]
+  plt.bar(y_pos, women_percent, align='center')
+  plt.xticks(y_pos, nationalities, rotation='vertical', fontsize=8)
+  plt.ylabel('Percentage of women')
+  plt.title('Proportion of women per nationality (only for nationalities with >5000)')
+  plt.tight_layout()
+  plt.show()
+
+
+
+def plot_gender_per_barri(data):
+  areas = tuple(
+    row['Name']
+    for row in data
+  )
+  y_pos = list(
+    range(
+      len(areas)
+    )
+  )
+  women_percent= [
+    row['Women'][1]
+    for row in data
+  ]
+  plt.bar(y_pos, women_percent, align='center')
+  plt.xticks(y_pos, areas, rotation='vertical', fontsize=8)
+  plt.ylabel('Percentage of women')
+  plt.title('Proportion of women per neighborhood')
+  plt.tight_layout()
+  plt.show()
+
+def plot_gender_per_districte(data):
+  areas = tuple(
+    row['Name']
+    for row in data
+  )
+  y_pos = list(
+    range(
+      len(areas)
+    )
+  )
+  women_percent= [
+    row['Women'][1]
+    for row in data
+  ]
+  plt.bar(y_pos, women_percent, align='center')
+  plt.xticks(y_pos, areas, rotation='vertical', fontsize=8)
+  plt.ylabel('Percentage of women')
+  plt.title('Proportion of women per district')
+  plt.tight_layout()
+  plt.show()
+
+
+
+
+def plot_bretxa_libraries_use(data1, data2):
+  level_bretxa=[
+    row['No internet'][1]
+    for row in data1
+  ]
+  level_use_libraries=[
+    row['Usos ordinadors i wifi'][1]
+    for row in data2
+  ]
+  labels=[
+    row['Name']
+    for row in data2
+  ]
+  plt.scatter(level_bretxa, level_use_libraries)
+
+  for i, text in enumerate (labels):
+    plt.annotate(text, (level_bretxa[i], level_use_libraries[i]), fontsize=8)
+
+  x=np.array(level_bretxa)
+  y=np.array(level_use_libraries)
+  m, b = np.polyfit(x, y, 1)
+  plt.plot(x, m*x+b)
+
+  plt.title('Correlation between lack of internet at home and use of public libraries\' wifi/computers', fontsize=8)
+  plt.ylabel('Use wifi/computers in public libraries per person', fontsize=8)
+  plt.xlabel('Percentage people who do not have internet at home', fontsize=8)
+  plt.tight_layout()
+  plt.show()
+
+
+def plot_atur_nivell_estudis(data1, data2):
+  level_atur=[
+    row['Unemployment']
+    for row in data1
+  ]
+  level_studies=[
+    row['Total']
+    for row in data2
+  ]
+  labels=[
+    row['Name']
+    for row in data2
+  ]
+  plt.scatter(level_atur, level_studies)
+
+  for i, text in enumerate (labels):
+    plt.annotate(text, (level_atur[i], level_studies[i]), fontsize=8)
+
+  x=np.array(level_atur)
+  y=np.array(level_studies)
+  m, b = np.polyfit(x, y, 1)
+  plt.plot(x, m*x+b)
+
+  plt.title('Correlation studies level and unemployment', fontsize=8)
+  plt.ylabel('Percentage of people without studies', fontsize=8)
+  plt.xlabel('Percentage of unemployed people', fontsize=8)
+  plt.tight_layout()
+  plt.show()
+
+
 
 
 csv_nationalities=open('2018_ine_nacionalitat_per_sexe.csv', newline='')
@@ -326,7 +523,7 @@ set_nationalities=list(set(list_nationalities))
 #this is the list of unique nationalities
 
 population_districts=count_total_population_area(set_districts, 'Nom_Districte', rows_nationalities)
-# pp(population_districts)
+# print(population_districts)
 population_neighborhoods=count_total_population_area(set_neighborhoods, 'Nom_Barri', rows_nationalities)
 # print(population_neighborhoods)
 
@@ -335,12 +532,29 @@ population_neighborhoods=count_total_population_area(set_neighborhoods, 'Nom_Bar
 # plot_diversity_variety(nationalities_count)
 
 
-#print(gender_count(set_districts, 'Nom_Districte', rows_nationalities))
-#print(gender_count(set_neighborhoods, 'Nom_Barri', rows_nationalities))
-#print(gender_count(set_nationalities, 'Nacionalitat', rows_nationalities))
+#print(gender_count_areas(set_districts, 'Nom_Districte', rows_nationalities))
+#print(gender_count_areas(set_neighborhoods, 'Nom_Barri', rows_nationalities))
+#print(gender_count_nationalities(set_nationalities, 'Nacionalitat', rows_nationalities))
 
-#print(count_non_spaniard(set_districts, 'Nom_Districte', rows_nationalities))
-#print(count_non_spaniard(set_neighborhoods, 'Nom_Barri', rows_nationalities))
+# gender_per_nationality_data=gender_count_naitonalitie(set_nationalities, 'Nacionalitat', rows_nationalities)
+# plot_gender_per_nationality(gender_per_nationality_data)
+
+# gender_per_barri_data=gender_count_areas(set_neighborhoods, 'Nom_Barri', rows_nationalities)
+# plot_gender_per_barri(gender_per_barri_data)
+
+# gender_per_districte_data=gender_count_areas(set_districts, 'Nom_Districte', rows_nationalities)
+# plot_gender_per_districte(gender_per_districte_data)
+
+
+
+
+# print(count_non_spaniard(set_districts, 'Nom_Districte', rows_nationalities))
+# print(count_non_spaniard(set_neighborhoods, 'Nom_Barri', rows_nationalities))
+# # non_spaniards_data_districts=count_non_spaniard(set_districts, 'Nom_Districte', rows_nationalities)
+# non_spaniards_data_neighborhoods=count_non_spaniard(set_neighborhoods, 'Nom_Barri', rows_nationalities)
+# # plot_non_spaniards(non_spaniards_data_districts)
+# plot_non_spaniards(non_spaniards_data_neighborhoods)
+ 
 
 #print(simpson_index(set_districts, 'Nom_Districte', rows_nationalities))
 #print(simpson_index(set_neighborhoods, 'Nom_Barri', rows_nationalities))
@@ -365,14 +579,19 @@ reader_nivell_academic = csv.DictReader(csvfile_nivell_academic)
 rows_nivell_academic = list(reader_nivell_academic)
 
 #print(academic_level_areas(set_districts, 'Nom_Districte', rows_nivell_academic))
-#print(academic_level_areas(set_neighborhoods, 'Nom_Barri', rows_nivell_academic))
+print(academic_level_areas(set_neighborhoods, 'Nom_Barri', rows_nivell_academic))
+academic_level_district_data=academic_level_areas(set_districts, 'Nom_Districte', rows_nivell_academic)
+academic_level_neighborhood_data=academic_level_areas(set_neighborhoods, 'Nom_Barri', rows_nivell_academic)
   
 csvfile_atur=open('2018_pes_atur.csv', newline='')
 reader_atur = csv.DictReader(csvfile_atur)
 rows_atur = list(reader_atur)
 
 #print(unemployment_district('Nom_Districte', rows_atur))
-#print(unemployment_neighborhood('Nom_Barri', rows_atur))
+print(unemployment_neighborhood('Nom_Barri', rows_atur))
+unemployment_district_data=unemployment_district('Nom_Districte', rows_atur)
+unemployment_neighborhood_data=unemployment_neighborhood('Nom_Barri', rows_atur)
+
 
 csvfile_biblios=open('2018_dades_biblioteques.csv', newline='')
 reader_biblios = csv.DictReader(csvfile_biblios)
@@ -396,3 +615,12 @@ rows_bretxa_digital = list(reader_bretxa_digital)
 
 # print(bretxa_digital_neighborhoods(rows_bretxa_digital, llegenda_barris))
 # print(bretxa_digital_districts(rows_bretxa_digital, llegenda_districtes))
+
+# data1=bretxa_digital_neighborhoods(rows_bretxa_digital, llegenda_barris)
+# data2=biblios_tic_barris('Nom_Barri', rows_biblios)
+# data1=bretxa_digital_districts(rows_bretxa_digital, llegenda_districtes)
+# data2=biblios_tic_districtes('Nom_Districte', rows_biblios)
+# plot_bretxa_libraries_use(data1, data2)
+
+#plot_atur_nivell_estudis(unemployment_district_data,academic_level_district_data)
+plot_atur_nivell_estudis(unemployment_neighborhood_data,academic_level_neighborhood_data)
