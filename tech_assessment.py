@@ -1,8 +1,9 @@
 import csv
 import numpy as np
+from pprint import pprint as pp
+from matplotlib.pyplot import bar
 
-
-#this function counts the total population of a neighborhood or district
+#(1) this function counts the total population of a neighborhood or district
 def count_total_population_area(areas, dict_key, data):
   population_stats=[]
   for area in areas:
@@ -15,9 +16,7 @@ def count_total_population_area(areas, dict_key, data):
   return population_stats
 
 
-
-
-#Diversity as variety
+#(2) Diversity as variety
 #this function counts the number of nationalities of an area (district or neighbourhood) and lists them in a dictionary.
 def count_nationalities(areas, dict_key, data):
   nationalities_per_area={}
@@ -32,7 +31,7 @@ def count_nationalities(areas, dict_key, data):
   return nationalities_per_area
 
 
-#Simpson Method (variety+balance)
+#(3) Simpson Method (variety+balance)
 #this function counts the total population for an area and then the population of a certain nationality. Based on this, it gives you the simpson index for that area. Finally, I create a sorted dictionary of simpson indices.
 def simpson_index(areas, dict_key, data):
   simpson_index_area=[]
@@ -57,7 +56,7 @@ def simpson_index(areas, dict_key, data):
   
 
 
-#this function tells you in which neighbourhood/district there are more non-Spaniards (gives you a ranking)
+#(4) this function tells you in which neighbourhood/district there are more non-Spaniards (gives you a ranking)
 def count_non_spaniard(items, dict_key, data):
   non_spaniard_stats=[]
   for item in items:
@@ -80,7 +79,7 @@ def count_non_spaniard(items, dict_key, data):
 
 
 
-#this function counts the number of women and men of an area (district or neighbourhood) or in a nationality and also gives you the percentage over the total populaiton (in an ordered list from higher to lower proportion of women).
+#(5) this function counts the number of women and men of an area (district or neighbourhood) or in a nationality and also gives you the percentage over the total populaiton (in an ordered list from higher to lower proportion of women).
 #it's only interesting for the case of nationalities, since gender is very much balanced wrt neighbourhoods/districts
 def gender_count(items, dict_key, data):
   gender_stats=[]
@@ -107,7 +106,7 @@ def gender_count(items, dict_key, data):
 
 
 
-#this function gives you a ranking of the neighbourhoods where there is higher concentration of people from a certain nationality
+#(6) this function gives you a ranking of the neighbourhoods where there is higher concentration of people from a certain nationality
 def where_is_each_nationality(areas, nationality, dict_key, data):
   data_count_nationality_per_area=[]
   for area in areas:
@@ -121,7 +120,7 @@ def where_is_each_nationality(areas, nationality, dict_key, data):
   return data_count_nationality_per_area
     
 
-#this function looks at the number of people (divided by gender) that do not have studies of any kind in each area
+#(7) this function looks at the number of people (divided by gender) that do not have studies of any kind in each area
 def academic_level_areas(items, dict_key, data):
   academic_level_stats=[]
   for item in items:
@@ -141,7 +140,7 @@ def academic_level_areas(items, dict_key, data):
   academic_level_stats.sort(key=lambda x: x.get('Women'),reverse=True)
   return academic_level_stats
 
-#this function gives you a ranking of neighborhood by percentage of unemployment
+#(8) this function gives you a ranking of neighborhood by percentage of unemployment
 def unemployment_neighborhood(dict_key, data):
   unemployment_stats=[]
   for neighborhood in set_neighborhoods:
@@ -154,7 +153,7 @@ def unemployment_neighborhood(dict_key, data):
   return unemployment_stats
         
 
-#this function gives you a ranking of districts by percentage of unemployment
+#(9) this function gives you a ranking of districts by percentage of unemployment
 def unemployment_district(dict_key, data):
   unemployment_stats=[]
   for district in set_districts:
@@ -171,7 +170,7 @@ def unemployment_district(dict_key, data):
   return unemployment_stats
 
 
-#this funcioin gives you a ranking of the amount of uses of computers and wifi of people from a neighborhood, in absolute numbers and relative to total population of area
+#(10) this funcioin gives you a ranking of the amount of uses of computers and wifi of people from a neighborhood, in absolute numbers and relative to total population of area
 def biblios_tic_barris(dict_key, data):
   usos_tic_stats=[]
   for neighborhood in set_neighborhoods:
@@ -187,7 +186,7 @@ def biblios_tic_barris(dict_key, data):
   return usos_tic_stats
 
 
-#this function gives you a ranking of the amount of uses of computers and wifi of people from a district, in absolute numbers and relative to total population of area
+#(11) this function gives you a ranking of the amount of uses of computers and wifi of people from a district, in absolute numbers and relative to total population of area
 def biblios_tic_districtes(dict_key, data):
   usos_tic_stats=[]
   for district in set_districts:
@@ -204,7 +203,7 @@ def biblios_tic_districtes(dict_key, data):
 
 
 
-#this fucntion gives you a translation between nnumbers and the qualitative answers to the survey on bretxa digital
+#(12) this fucntion gives you a translation between nnumbers and the qualitative answers to the survey on bretxa digital
 def translate_metainfo(data):
   translate_districts=[]
   translate_neighborhoods=[]
@@ -217,7 +216,7 @@ def translate_metainfo(data):
       translate_districts.append({'Codi':row['Codi_resposta'], 'Districte':row['Text_resposta']})
   return translate_districts, translate_neighborhoods
 
-#this function gives you the amount of people per neighborhood that said they don't have internet at home + the percentage relative to the amount of people surveyed
+#(13) this function gives you the amount of people per neighborhood that said they don't have internet at home + the percentage relative to the amount of people surveyed
 def bretxa_digital_neighborhoods(data, llegenda):
   no_internet_stats=[]
   for item in llegenda:
@@ -256,27 +255,23 @@ def bretxa_digital_districts(data, llegenda):
   no_internet_stats.sort(key=lambda x: x.get('No internet')[1],reverse=True)
   return no_internet_stats
   
-  
+# Plotters
 
+def plot_diversity_variety(data):
+  data_pairs = [
+    (x, num_nationalities)
+    for x, (area_name, [num_nationalities, nationalities])
+    in enumerate(data.items())  
+  ]
+  # nationality_nums = [
+  #   num_nationalities
+  #   for area_name, [num_nationalities, nationalities] 
+  #   in data.items()
+  # ]  
+  xs = [x for (x, y) in data_pairs]
+  ys = [y for (x, y) in data_pairs]
+  bar(xs, ys)
 
-
-
-
-
-# def bretxa_digital_districts(data, translation_districts):
-#   for item in translation_areas:
-#     for item['Codi']:
-#       for row in data:
-#         if row['Districte']==item['Codi']:
-
-
-
-
-
-
-
-
-      
 
 csv_nationalities=open('2018_ine_nacionalitat_per_sexe.csv', newline='')
 reader_nationalities = csv.DictReader(csv_nationalities)
@@ -295,12 +290,14 @@ set_nationalities=list(set(list_nationalities))
 #this is the list of unique nationalities
 
 population_districts=count_total_population_area(set_districts, 'Nom_Districte', rows_nationalities)
-# print(population_districts)
+# pp(population_districts)
 population_neighborhoods=count_total_population_area(set_neighborhoods, 'Nom_Barri', rows_nationalities)
-#print(population_neighborhoods)
+# print(population_neighborhoods)
 
-#print(count_nationalities(set_districts, 'Nom_Districte', rows_nationalities))
-#print(count_nationalities(set_neighborhoods, 'Nom_Barri', rows_nationalities))
+nationalities_count = count_nationalities(set_districts, 'Nom_Districte', rows_nationalities)
+# pp(nationalities_count)
+plot_diversity_variety(nationalities_count)
+# print(count_nationalities(set_neighborhoods, 'Nom_Barri', rows_nationalities))
 
 #print(gender_count(set_districts, 'Nom_Districte', rows_nationalities))
 #print(gender_count(set_neighborhoods, 'Nom_Barri', rows_nationalities))
@@ -323,9 +320,6 @@ population_neighborhoods=count_total_population_area(set_neighborhoods, 'Nom_Bar
 # print(where_is_each_nationality(set_neighborhoods, 'Paraguai', 'Nom_Barri', rows_nationalities))
 # print(where_is_each_nationality(set_neighborhoods, 'Rússia', 'Nom_Barri', rows_nationalities))
 
-
-
-
 csvfile_nivell_academic=open('2018_padro_nivell_academic.csv', newline='')
 reader_nivell_academic = csv.DictReader(csvfile_nivell_academic)
 rows_nivell_academic = list(reader_nivell_academic)
@@ -333,8 +327,6 @@ rows_nivell_academic = list(reader_nivell_academic)
 #print(academic_level_areas(set_districts, 'Nom_Districte', rows_nivell_academic))
 #print(academic_level_areas(set_neighborhoods, 'Nom_Barri', rows_nivell_academic))
   
-
-
 csvfile_atur=open('2018_pes_atur.csv', newline='')
 reader_atur = csv.DictReader(csvfile_atur)
 rows_atur = list(reader_atur)
@@ -342,16 +334,12 @@ rows_atur = list(reader_atur)
 #print(unemployment_district('Nom_Districte', rows_atur))
 #print(unemployment_neighborhood('Nom_Barri', rows_atur))
 
-
-
 csvfile_biblios=open('2018_dades_biblioteques.csv', newline='')
 reader_biblios = csv.DictReader(csvfile_biblios)
 rows_biblios = list(reader_biblios)
 
 # print(biblios_tic_districtes('Nom_Districte', rows_biblios))
 # print(biblios_tic_barris('Nom_Barri', rows_biblios))
-
-
 
 csvfile_metainfo=open('metainfo.csv', newline='')
 reader_metainfo = csv.DictReader(csvfile_metainfo)
