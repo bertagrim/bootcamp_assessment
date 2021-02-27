@@ -106,7 +106,7 @@ def gender_count_nationalities(items, dict_key, data):
   return gender_stats
 
 
-#(5) this function counts the number of women and men of an area (district or neighbourhood) and also gives you the percentage over the total populaiton (in an ordered list from higher to lower proportion of women).
+#this function counts the number of women and men of an area (district or neighbourhood) and also gives you the percentage over the total populaiton (in an ordered list from higher to lower proportion of women).
 #it's only interesting for the case of nationalities, since gender is very much balanced wrt neighbourhoods/districts. 
 def gender_count_areas(items, dict_key, data):
   gender_stats=[]
