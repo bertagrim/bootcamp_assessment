@@ -1,7 +1,7 @@
 import csv
 import numpy as np
 from pprint import pprint as pp
-from matplotlib.pyplot import bar
+import matplotlib.pyplot as plt
 
 #(1) this function counts the total population of a neighborhood or district
 def count_total_population_area(areas, dict_key, data):
@@ -264,13 +264,24 @@ def plot_diversity_variety(data):
     in enumerate(data.items())  
   ]
   # nationality_nums = [
-  #   num_nationalities
-  #   for area_name, [num_nationalities, nationalities] 
-  #   in data.items()
+    # num_nationalities
+    # for area_name, [num_nationalities, nationalities] 
+    # in data.items()
   # ]  
-  xs = [x for (x, y) in data_pairs]
-  ys = [y for (x, y) in data_pairs]
-  bar(xs, ys)
+  area_names = list(data.keys())
+  nationality_nums = [
+    num_nationalities
+    for [num_nationalities, _]
+    in data.values()
+  ]
+  # pp(data)
+  pp(area_names)
+  pp(nationality_nums)
+  fig, ax = plt.subplots()
+  ax.barh(area_names, nationality_nums)
+  # xs = [x for (x, y) in data_pairs]
+  # ys = [y for (x, y) in data_pairs]
+  # bar(xs, ys)
 
 
 csv_nationalities=open('2018_ine_nacionalitat_per_sexe.csv', newline='')
